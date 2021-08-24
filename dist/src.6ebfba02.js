@@ -29577,6 +29577,10 @@ function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "functio
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -29589,33 +29593,114 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-function useIncrement(initial, step) {
-  var _useState = (0, _react.useState)(initial),
+function useIncrement() {
+  var initialValue = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  var step = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
+  var _useState = (0, _react.useState)(initialValue),
       _useState2 = _slicedToArray(_useState, 2),
       count = _useState2[0],
       setCount = _useState2[1];
 
   var increment = function increment() {
     setCount(function (c) {
-      return c + step;
+      return c + 1;
     });
   };
 
   return [count, increment];
 }
 
-function Compteur() {
-  var _useIncrement = useIncrement(0, 2),
-      _useIncrement2 = _slicedToArray(_useIncrement, 2),
-      count = _useIncrement2[0],
-      increment = _useIncrement2[1];
+function useAutoIncrement() {
+  var initialValue = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+  var step = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-  return /*#__PURE__*/_react.default.createElement("button", {
-    onClick: increment
-  }, "Incr\xE9menter : ", count);
+  var _useState3 = (0, _react.useState)(initialValue),
+      _useState4 = _slicedToArray(_useState3, 2),
+      value = _useState4[0],
+      setValue = _useState4[1];
+
+  return [value, increment];
 }
 
-(0, _reactDom.render)( /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(Compteur, null)), document.getElementById('app'));
+function useToggle() {
+  var initialValue = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+  var _useState5 = (0, _react.useState)(initialValue),
+      _useState6 = _slicedToArray(_useState5, 2),
+      compteurVisible = _useState6[0],
+      setCompteurVisible = _useState6[1];
+
+  var toggleCompteur = function toggleCompteur() {
+    setCompteurVisible(function (c) {
+      return !c;
+    });
+  };
+
+  return [compteurVisible, toggleCompteur];
+}
+
+function Compteur() {
+  var _useAutoIncrement = useAutoIncrement(10),
+      _useAutoIncrement2 = _slicedToArray(_useAutoIncrement, 2),
+      count = _useAutoIncrement2[0],
+      increment = _useAutoIncrement2[1];
+
+  return /*#__PURE__*/_react.default.createElement("button", {
+    onClick: increment,
+    className: "compteur"
+  }, "Incr\xE9menter ", count);
+}
+
+function App() {
+  // const [compteurVisible, toggleCompteur] = useToggle(true)
+  return /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(TodoList, null));
+}
+
+function TodoList() {
+  var _useState7 = (0, _react.useState)([]),
+      _useState8 = _slicedToArray(_useState7, 2),
+      todos = _useState8[0],
+      setTodos = _useState8[1];
+
+  (0, _react.useEffect)(function () {
+    _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+      var response, responseData;
+      return regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) {
+          switch (_context.prev = _context.next) {
+            case 0:
+              _context.next = 2;
+              return fetch('https://jsonplaceholder.typicode.com/todos?_limit=10');
+
+            case 2:
+              response = _context.sent;
+              _context.next = 5;
+              return response.json();
+
+            case 5:
+              responseData = _context.sent;
+
+              if (response.ok) {
+                setTodos(responseData);
+              } else {
+                alert(JSON.stringify(responseData));
+              }
+
+            case 7:
+            case "end":
+              return _context.stop();
+          }
+        }
+      }, _callee);
+    }))();
+  }, []);
+  return /*#__PURE__*/_react.default.createElement("div", null, todos.map(function (t) {
+    return /*#__PURE__*/_react.default.createElement("li", null, t.title);
+  }));
+}
+
+(0, _reactDom.render)( /*#__PURE__*/_react.default.createElement(App, null), document.getElementById('app'));
 },{"react":"node_modules/react/index.js","react-dom":"node_modules/react-dom/index.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -29644,7 +29729,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59021" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52160" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
